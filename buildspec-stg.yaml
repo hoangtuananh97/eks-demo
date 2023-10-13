@@ -23,6 +23,7 @@ phases:
       - docker build -t $MY_REPOSITORY_URI:latest -f Dockerfile .
       - docker tag $MY_REPOSITORY_URI:latest $MY_REPOSITORY_URI:version-$COMMIT_SHORT_ID
       - echo Writing image tag and set env variable file...
+      - sed -i "s/IMAGE_TAG/$COMMIT_SHORT_ID/g" ./docker-compose.yml
       - cat docker-compose.yml
 
   post_build:
