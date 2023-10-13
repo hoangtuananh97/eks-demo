@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Namespace }}-configmap
+data:
+  {{- (.Files.Glob "helmchart/config-map.yaml").AsConfig | nindent 2 }}
+
