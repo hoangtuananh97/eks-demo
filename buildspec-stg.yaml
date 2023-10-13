@@ -1,7 +1,6 @@
 version: 0.2
 
 env:
-  secrets-manager:
   variables:
     MY_AWS_REGION: "ap-southeast-1"
     MY_REPOSITORY_HOST: "627047936520.dkr.ecr.ap-southeast-1.amazonaws.com"
