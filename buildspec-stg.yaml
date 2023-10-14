@@ -18,12 +18,13 @@ phases:
       - COMMIT_SHORT_ID=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -b -8)
       - echo $(date +%Y%m%d%H%M) > /tmp/timestamp
       - DATETIME_CURRENT=$(echo $(cat /tmp/timestamp))
+      - VERSION_COMMIT = $($VERSION_API.$DATETIME_CURRENT.$COMMIT_SHORT_ID)
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build --platform=linux/amd64 -t $MY_REPOSITORY_URI:latest -f Dockerfile .
-      - docker tag $MY_REPOSITORY_URI:latest $MY_REPOSITORY_URI:$VERSION_API.$DATETIME_CURRENT.$COMMIT_SHORT_ID
+      - docker tag $MY_REPOSITORY_URI:latest $MY_REPOSITORY_URI:$VERSION_COMMIT
       - echo Writing image tag and set env variable file...
       - sed -i "s/IMAGE_TAG/$COMMIT_SHORT_ID/g" ./docker-compose.yml
       - cat docker-compose.yml
@@ -33,7 +34,7 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $MY_REPOSITORY_URI:latest
-      - docker push $MY_REPOSITORY_URI:version-$COMMIT_SHORT_ID
+      - docker push $MY_REPOSITORY_URI:$VERSION_COMMIT
 
 artifacts:
   files:

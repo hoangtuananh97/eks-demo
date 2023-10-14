@@ -2,7 +2,7 @@ version: "3"
 
 services:
   app:
-    image: 627047936520.dkr.ecr.ap-southeast-1.amazonaws.com/ECR_NAME:version-IMAGE_TAG
+    image: 627047936520.dkr.ecr.ap-southeast-1.amazonaws.com/ECR_NAME:$VERSION_COMMIT
     expose:
       - "8888"
     restart: always
