@@ -31,7 +31,7 @@ podSecurityContext: {}
 securityContext: {}
 
 service:
-  type: ClusterIP #Tương ứng service/type trong file service.yaml
+  type: LoadBalancer #Tương ứng service/type trong file service.yaml
   port: 8080 #Tương ứng service/port trong file service.yaml
 
 ingress:

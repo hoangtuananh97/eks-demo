@@ -4,7 +4,7 @@ services:
   app:
     image: 627047936520.dkr.ecr.ap-southeast-1.amazonaws.com/ECR_NAME:$VERSION_COMMIT
     expose:
-      - "8888"
+      - "8080"
     restart: always
 
 volumes:
