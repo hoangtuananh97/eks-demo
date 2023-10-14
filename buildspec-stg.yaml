@@ -18,7 +18,7 @@ phases:
       - COMMIT_SHORT_ID=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -b -8)
       - echo $(date +%Y%m%d%H%M) > /tmp/timestamp
       - DATETIME_CURRENT=$(echo $(cat /tmp/timestamp))
-      - VERSION_COMMIT = $($VERSION_API.$DATETIME_CURRENT.$COMMIT_SHORT_ID)
+      - VERSION_COMMIT = $(echo ${VERSION_API}.${DATETIME_CURRENT}.${COMMIT_SHORT_ID})
   build:
     commands:
       - echo Build started on `date`
