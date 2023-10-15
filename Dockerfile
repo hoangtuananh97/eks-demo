@@ -1,7 +1,2 @@
-FROM node:10
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 8080
-CMD ["node", "app.js"]
+FROM nginx
+COPY app1 /usr/share/nginx/html/app1

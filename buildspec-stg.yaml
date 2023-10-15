@@ -8,19 +8,30 @@ env:
     MY_REPOSITORY_URI: "627047936520.dkr.ecr.ap-southeast-1.amazonaws.com/eks-demo"
     MY_DOCKERHUB_USERNAME: ""
     MY_DOCKERHUB_PASSWORD: ""
+    EKS_CLUSTER_NAME: "app-demo"
+    EKS_NAMESPACE: "app-demo"
 
 phases:
   pre_build:
     commands:
       - echo Pre_Build started on `date`
+      - echo "Verify AWS CLI Version..."
       - aws --version
-      - aws ecr get-login-password --region $MY_AWS_REGION | docker login --username AWS --password-stdin $MY_REPOSITORY_HOST
+
+      - echo "Get tag name..."
       - COMMIT_SHORT_ID=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -b -8)
-      - echo ${COMMIT_SHORT_ID}
       - echo $(date +%Y%m%d) > /tmp/timestamp
       - DATETIME_CURRENT=$(echo $(cat /tmp/timestamp))
       - AUTHOR_COMMIT="$(git log -1 --pretty=%an)"
       - VERSION_COMMIT=${VERSION_API}.${DATETIME_CURRENT}.${AUTHOR_COMMIT}.${COMMIT_SHORT_ID}
+      - echo ${VERSION_COMMIT}
+
+      - echo "Login in to Amazon ECR..."
+      - aws ecr get-login-password --region $MY_AWS_REGION | docker login --username AWS --password-stdin $MY_REPOSITORY_HOST
+
+      - echo "Update Image tag in kube-manifest..."
+      - sed -i 's@CONTAINER_IMAGE@'"MY_REPOSITORY_URI:$VERSION_COMMIT"'@' kube-manifests/01-DEVOPS-Nginx-Deployment.yml
+      - export KUBECONFIG=$HOME/.kube/config
 
   build:
     commands:
@@ -29,16 +40,37 @@ phases:
       - docker build --platform=linux/amd64 -t $MY_REPOSITORY_URI:latest -f Dockerfile .
       - docker tag $MY_REPOSITORY_URI:latest $MY_REPOSITORY_URI:$VERSION_COMMIT
       - echo Writing image tag and set env variable file...
-      - sed -i "s/IMAGE_TAG/$COMMIT_SHORT_ID/g" ./docker-compose.yml
-      - cat docker-compose.yml
+#      - sed -i "s/IMAGE_TAG/$COMMIT_SHORT_ID/g" ./docker-compose.yml
+#      - cat docker-compose.yml
 
   post_build:
     commands:
+      # Push Docker Image to ECR Repository
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push $MY_REPOSITORY_URI:latest
+#      - docker push $MY_REPOSITORY_URI:latest
       - docker push $MY_REPOSITORY_URI:$VERSION_COMMIT
+      - echo "Docker Image Push to ECR Completed -  $REPOSITORY_URI:$VERSION_COMMIT"
+      # Extracting AWS Credential Information using STS Assume Role for kubectl
+      - echo "Setting Environment Variables related to AWS CLI for Kube Config Setup"
+#      - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
+#      - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
+#      - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
+#      - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
+#      - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
+      # Update kubectl Images
+#      - kubectl set image -n staging-v2 deployment/stg-public-api-deployment stg-public-api=236382736970.dkr.ecr.ap-northeast-1.amazonaws.com/stg-public-api-v2:v2.231011.10
+      # Setup kubectl with our EKS Cluster
+      - echo "Update Kube Config"
+      - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
+      # Apply changes to our Application using kubectl
+      - echo "Apply changes to kube manifests"
+      - kubectl -n $EKS_NAMESPACE apply -f kube-manifests/
+      - echo "Completed applying changes to Kubernetes Objects"
+      # Create Artifacts which we can use if we want to continue our pipeline for other stages
+      - printf '[{"name":"01-DEVOPS-Nginx-Deployment.yml","imageUri":"%s"}]' $REPOSITORY_URI:$VERSION_COMMIT > build.json
 
 artifacts:
   files:
-    - "docker-compose.yml"
+    - build.json
+    - kube-manifests/*
