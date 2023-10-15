@@ -16,6 +16,7 @@ phases:
       - aws --version
       - aws ecr get-login-password --region $MY_AWS_REGION | docker login --username AWS --password-stdin $MY_REPOSITORY_HOST
       - COMMIT_SHORT_ID=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -b -8)
+      - echo ${COMMIT_SHORT_ID}
       - echo $(date +%Y%m%d) > /tmp/timestamp
       - DATETIME_CURRENT=$(echo $(cat /tmp/timestamp))
       - AUTHOR_COMMIT="$(git log -1 --pretty=%an)"
