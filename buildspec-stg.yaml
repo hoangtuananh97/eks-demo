@@ -21,6 +21,7 @@ phases:
       - DATETIME_CURRENT=$(echo $(cat /tmp/timestamp))
       - AUTHOR_COMMIT="$(git log -1 --pretty=%an)"
       - VERSION_COMMIT=${VERSION_API}.${DATETIME_CURRENT}.${AUTHOR_COMMIT}.${COMMIT_SHORT_ID}
+
   build:
     commands:
       - echo Build started on `date`
