@@ -59,22 +59,18 @@ phases:
       - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
       - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
       - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
-      - echo $AWS_ACCESS_KEY_ID
-      - echo $AWS_SECRET_ACCESS_KEY
-      - echo $AWS_SESSION_TOKEN
-      - echo $AWS_EXPIRATION
       # Update kubectl Images
-#      - kubectl set image -n staging-v2 deployment/stg-public-api-deployment stg-public-api=236382736970.dkr.ecr.ap-northeast-1.amazonaws.com/stg-public-api-v2:v2.231011.10
+      - kubectl -n $EKS_NAMESPACE set image deployment/eks-devops-deployment eks-devops=$MY_REPOSITORY_URI:$VERSION_COMMIT
       # Setup kubectl with our EKS Cluster
-      - echo "Update Kube Config"
-      - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region ap-southeast-1
-      - kubectl config view
-      # Apply changes to our Application using kubectl
-      - echo "Apply changes to kube manifests"
-      - kubectl apply -f kube-manifests/
-      - echo "Completed applying changes to Kubernetes Objects"
-      # Create Artifacts which we can use if we want to continue our pipeline for other stages
-      - printf '[{"name":"01-DEVOPS-Nginx-Deployment.yml","imageUri":"%s"}]' $REPOSITORY_URI:$VERSION_COMMIT > build.json
+#      - echo "Update Kube Config"
+#      - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region ap-southeast-1
+#      - kubectl config view
+#      # Apply changes to our Application using kubectl
+#      - echo "Apply changes to kube manifests"
+#      - kubectl apply -f kube-manifests/
+#      - echo "Completed applying changes to Kubernetes Objects"
+#      # Create Artifacts which we can use if we want to continue our pipeline for other stages
+#      - printf '[{"name":"01-DEVOPS-Nginx-Deployment.yml","imageUri":"%s"}]' $REPOSITORY_URI:$VERSION_COMMIT > build.json
 
 artifacts:
   files:
