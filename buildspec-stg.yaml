@@ -64,13 +64,13 @@ phases:
       - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region ap-southeast-1
       - kubectl config view
       # Update kubectl Images
-      - kubectl -n $EKS_NAMESPACE set image deployment/eks-devops-deployment eks-devops=$MY_REPOSITORY_URI:$VERSION_COMMIT
+#      - kubectl -n $EKS_NAMESPACE set image deployment/eks-devops-deployment eks-devops=$MY_REPOSITORY_URI:$VERSION_COMMIT
 #      # Apply changes to our Application using kubectl
-#      - echo "Apply changes to kube manifests"
-#      - kubectl apply -f kube-manifests/
+      - echo "Apply changes to kube manifests"
+      - kubectl apply -f kube-manifests/
 #      - echo "Completed applying changes to Kubernetes Objects"
 #      # Create Artifacts which we can use if we want to continue our pipeline for other stages
-#      - printf '[{"name":"01-DEVOPS-Nginx-Deployment.yml","imageUri":"%s"}]' $REPOSITORY_URI:$VERSION_COMMIT > build.json
+      - printf '[{"name":"01-DEVOPS-Nginx-Deployment.yml","imageUri":"%s"}]' $REPOSITORY_URI:$VERSION_COMMIT > build.json
 
 artifacts:
   files:
